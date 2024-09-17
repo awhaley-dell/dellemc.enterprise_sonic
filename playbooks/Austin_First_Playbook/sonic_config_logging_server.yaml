@@ -1,7 +1,7 @@
 ---
 - name: Ansible configuration of the KLISH logging severity labels
   hosts: datacenter
-  gather_facts: False
+  gather_facts: True
   connection: httpapi
   collections:
     - dellemc.enterprise_sonic
@@ -34,6 +34,12 @@
           #  severity: NOTICE
           #  remote_port: 514
     register: test_task_output
+  - name: Gather facts
+    sonic_facts:
+      gather_subset: min
+      gather_network_resources:
+      - logging
+    register: test_fact_output
   - name: Delete created logging servers
     sonic_logging:
       config:
@@ -48,4 +54,10 @@
           - host: ls8
       state: deleted
     register: test_task_two_output
+  - name: Gather facts after delete
+    sonic_facts:
+      gather_subset: min
+      gather_network_resources:
+      - logging
+    register: test_fact_two_output
  
