@@ -1,0 +1,51 @@
+---
+- name: Ansible configuration of the KLISH logging severity labels
+  hosts: datacenter
+  gather_facts: False
+  connection: httpapi
+  collections:
+    - dellemc.enterprise_sonic
+
+  tasks:
+  - name: Create logging servers
+    sonic_logging:
+      config:
+        remote_servers:
+          - host: ls1
+            severity: DEBUG
+          - host: ls2
+            severity: INFORMATIONAL
+          - host: ls3
+            severity: NOTICE
+          - host: ls4
+            severity: WARNING
+          - host: ls5
+            severity: ERROR
+          - host: ls6
+            severity: CRITICAL
+          - host: ls7
+            severity: ALERT
+          - host: ls8
+            severity: EMERGENCY
+          # Add combo of all the independent things I can think of together
+          #- host: ls_combo
+          #  message_type: log
+          #  protocol: TCP
+          #  severity: NOTICE
+          #  remote_port: 514
+    register: test_task_output
+  - name: Delete created logging servers
+    sonic_logging:
+      config:
+        remote_servers:
+          - host: ls1
+          - host: ls2
+          - host: ls3
+          - host: ls4
+          - host: ls5
+          - host: ls6
+          - host: ls7
+          - host: ls8
+      state: deleted
+    register: test_task_two_output
+ 

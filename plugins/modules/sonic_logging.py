@@ -75,6 +75,17 @@ options:
             choices:
               - log
               - event
+          severity:
+            type: str
+            choices:
+              - DEBUG
+              - INFORMATIONAL
+              - NOTICE
+              - WARNING
+              - ERROR
+              - CRITICAL
+              - ALERT
+              - EMERGENCY
           protocol:
             type: str
             description:
