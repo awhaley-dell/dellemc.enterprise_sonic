@@ -1,17 +1,19 @@
 ---
 - name: Ansible configuration of the KLISH logging severity labels
   hosts: datacenter
-  gather_facts: True
+  gather_facts: false
   connection: httpapi
   collections:
     - dellemc.enterprise_sonic
 
   tasks:
+  # Merged - Only alters explicit references and don't touch anything out of scope
   - name: Create logging servers
     sonic_logging:
       config:
         remote_servers:
           - host: ls1
+            message_type: log
             severity: DEBUG
           - host: ls2
             severity: INFORMATIONAL
@@ -33,19 +35,85 @@
           #  protocol: TCP
           #  severity: NOTICE
           #  remote_port: 514
-    register: test_task_output
-  - name: Gather facts
+      state: merged
+    register: test_task_output_post_merge
+  - name: Gather facts post merge
     sonic_facts:
       gather_subset: min
       gather_network_resources:
       - logging
     register: test_fact_output
+
+  # Overridden wipes clean ALL the values THEN applies specified option values
+  - name: Modify logging servers
+    sonic_logging:
+      config:
+        remote_servers:
+          - host: ls1
+            message_type: event
+            severity: EMERGENCY
+          - host: ls8
+            severity: ALERT
+      state: overridden
+    register: test_task_output
+  - name: Gather facts post overriden
+    sonic_facts:
+      gather_subset: min
+      gather_network_resources:
+      - logging
+    register: test_fact_output_post_overridden
+
+  # Replaced only deletes mentioned units then applies the specified option values
+  - name: Replace logging servers
+    sonic_logging:
+      config:
+        remote_servers:
+          # Expect ls1 to change severity
+          - host: ls1
+            # Merged wouldnt mess with message_type, replaced will change it back to log from event
+            severity: DEBUG
+          # ls2-7 will now be created
+          - host: ls2
+            severity: INFORMATIONAL
+          - host: ls3
+            severity: NOTICE
+          - host: ls4
+            severity: WARNING
+          - host: ls5
+            severity: ERROR
+          - host: ls6
+            severity: CRITICAL
+          - host: ls7
+            severity: ALERT
+          # Expect ls8 to be the same as the overridden final state
+      state: replaced
+    register: test_task_output
+  - name: Gather facts post replaced
+    sonic_facts:
+      gather_subset: min
+      gather_network_resources:
+      - logging
+    register: test_fact_output_post_replace
+
   - name: Delete created logging servers
     sonic_logging:
       config:
         remote_servers:
           - host: ls1
+            # Expect message_type to still be log
+            # Only delete the value IF it is set to match DEBUG, not if set to INFO etc.
+            # ERROR: May be improperly formed rest api or config error
+              # Valid rest api from debug cli
+            #path: /restconf/data/openconfig-system:system/logging/remote-servers/remote-server=ls1/config/openconfig-system-ext:severity
+            #method: DELETE
+            #body: None
+            #status code: 204
+            #response content: 
+          # TODO
+            #severity: DEBUG
           - host: ls2
+            # Only has severity option, ls2 should entirely be empty but not deleted
+            #severity: INFORMATIONAL
           - host: ls3
           - host: ls4
           - host: ls5
@@ -54,10 +122,10 @@
           - host: ls8
       state: deleted
     register: test_task_two_output
-  - name: Gather facts after delete
+  - name: Gather facts post deleted
     sonic_facts:
       gather_subset: min
       gather_network_resources:
       - logging
-    register: test_fact_two_output
+    register: test_fact_output_post_delete
  
