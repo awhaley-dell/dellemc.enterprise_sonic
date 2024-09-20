@@ -78,6 +78,8 @@ options:
               - audit
           severity:
             type: str
+            description:
+              - The log severity filter for remote syslog server
             choices:
               - DEBUG
               - INFORMATIONAL
@@ -87,6 +89,7 @@ options:
               - CRITICAL
               - ALERT
               - EMERGENCY
+          protocol:
             type: str
             description:
               - Type of the protocol for sending the  messages.
