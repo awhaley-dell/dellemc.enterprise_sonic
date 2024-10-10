@@ -1,0 +1,20 @@
+---
+- name: Ansible collecting facts from a sonic device
+  hosts: datacenter
+  gather_facts: True
+  connection: httpapi
+  collections:
+    - dellemc.enterprise_sonic
+
+  tasks:
+  - name: Gather facts
+    sonic_facts:
+      gather_subset: min
+      gather_network_resources:
+      - system
+      - logging
+    register: test_task_output
+
+  - name: Print facts
+    debug:
+      msg: "{{ test_task_output.ansible_facts.ansible_network_resources }}"
