@@ -239,7 +239,3 @@ overridden_01:
                 protocol: TCP
                 severity: ERROR
                 vrf-name:
-
-# Add severity change for UT, think about test case
-# Think about BEFORE STATE (existing logging config)
-# Check AFTER state (expected config requests)
