@@ -175,7 +175,10 @@ class Interfaces(ConfigBase):
                 try:
                     edit_config(self._module, to_request(self._module, requests))
                 except ConnectionError as exc:
-                    self._module.fail_json(msg=str(exc), code=exc.code)
+                    if "Unsupported speed" in str(exc):
+                        print("Invalid speed seen.", file=open('/home/testuser/mylog.txt', 'a'))
+                    else:
+                        self._module.fail_json(msg=str(exc), code=exc.code)
             result['changed'] = True
         result['commands'] = commands
 
@@ -448,7 +451,30 @@ class Interfaces(ConfigBase):
         else:
             payload['openconfig-if-ethernet:config'][payload_attr] = c_attr
             if attr == 'speed':
+                # Do I need this lookup table?
+                intf_speed_map = {
+                    "SPEED_DEFAULT": 0,
+                    "SPEED_10MB": 10,
+                    "SPEED_100MB": 100,
+                    "SPEED_1GB": 1000,
+                    "SPEED_2500MB": 2500,
+                    "SPEED_5GB": 5000,
+                    "SPEED_10GB": 10000,
+                    "SPEED_20GB": 20000,
+                    "SPEED_25GB": 25000,
+                    "SPEED_40GB": 40000,
+                    "SPEED_50GB": 50000,
+                    "SPEED_100GB": 100000,
+                    "SPEED_200GB": 200000,
+                    "SPEED_400GB": 400000,
+                    "SPEED_800GB": 800000
+                }
+                valid_intf_speeds = retrieve_valid_intf_speed(self._module, intf_name)
+
+                if self.is_port_in_port_group(intf_name) and (intf_speed_map.get(c_attr) not in valid_intf_speeds):
+                    self._module.fail_json(msg='If the port-group is in its default speed you will be unable to configure a non-default speed in a port-group member. Please use port group module to change the port-groups speed before changing the individual port speed.')
                 payload['openconfig-if-ethernet:config'][payload_attr] = 'openconfig-if-ethernet:' + c_attr
+
             if attr == 'advertised_speed':
                 c_ads = c_attr if c_attr else []
                 h_ads = h_attr if h_attr else []
@@ -697,3 +723,31 @@ class Interfaces(ConfigBase):
         if default_intf_speeds.get(intf_name) is None:
             default_intf_speeds[intf_name] = retrieve_default_intf_speed(self._module, intf_name)
         return default_intf_speeds[intf_name]
+
+
+
+def retrieve_valid_intf_speed(module, intf_name):
+    # Read the valid_speeds
+    valid_speed_method = "get"
+    valid_speed_sonic_port_url = 'data/sonic-port:sonic-port/PORT/PORT_LIST=%s'
+    valid_speed_sonic_port_vs_url = (valid_speed_sonic_port_url + '/valid_speeds') % quote(intf_name, safe='')
+    valid_speed_request = {"path": valid_speed_sonic_port_vs_url, "method": valid_speed_method}
+    try:
+        valid_speed_response = edit_config(module, to_request(module, valid_speed_request))
+    except ConnectionError as exc:
+        print("ConnectionError seen", file=open('/home/testuser/mylog.txt', 'a'))
+        module.fail_json(msg=str(exc), code=exc.code)
+
+    v_speeds_int_list = []
+    if 'sonic-port:valid_speeds' in valid_speed_response[0][1]:
+        v_speeds = valid_speed_response[0][1].get('sonic-port:valid_speeds', '')
+        v_speeds_list = v_speeds.split(",")
+        for vs in v_speeds_list:
+            v_speeds_int_list.append(int(vs))
+
+    if v_speeds_int_list:
+        print("Valid speeds: {}".format(v_speeds_int_list), file=open('/home/testuser/mylog.txt', 'a'))
+        return v_speeds_int_list
+    else:
+        module.fail_json(msg="Unable to retireve valid port speeds for the interface {0}".format(intf_name))
+        return None
