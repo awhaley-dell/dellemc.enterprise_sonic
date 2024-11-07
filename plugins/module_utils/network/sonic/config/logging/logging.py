@@ -339,10 +339,6 @@ class Logging(ConfigBase):
                     protocol_config = server.get('protocol', None)
                     message_type_config = server.get('message_type', None)
                     vrf_config = server.get('vrf', None)
-                    if source_interface_config or remote_port_config or \
-                            message_type_config or vrf_config or protocol_config:
-                        err_msg = "Logging remote_server parameter(s) can not be deleted."
-                        self._module.fail_json(msg=err_msg, code=405)
 
     def preprocess_want(self, want, state):
 
@@ -394,6 +390,7 @@ class Logging(ConfigBase):
 
         requests = []
 
+        print("Configs: {}".format(configs), file=open('/home/testuser/mylog.txt', 'a'))
         servers_config = configs.get('remote_servers', None)
         if servers_config:
             servers_request = []
@@ -440,16 +437,43 @@ class Logging(ConfigBase):
         return requests
 
     def get_delete_servers_requests(self, configs):
-
+        #path: /restconf/data/openconfig-system:system/logging/remote-servers/remote-server=ls1/config/openconfig-system-ext:severity
+        #   method: DELETE
+        #   body: None
         requests = []
 
         # Create URL and payload
         method = DELETE
         for config in configs:
+            servers_config = config.get('host', None)
+            print("Servers_config: {}".format(servers_config), file=open('/home/testuser/mylog.txt', 'a'))
+            #if servers_config:
+            #    servers_host = servers_config.get('host')
             server_host = config['host']
             url = 'data/openconfig-system:system/logging/remote-servers/remote-server={0}'.format(server_host)
-            request = {"path": url, "method": method}
-            requests.append(request)
+            # Will need to seperate out these urls eventually, going to try to get it all working with one at a time first
+            if config.get('source_interface'):
+                request = {"path": "{}/config/openconfig-system-ext:source-interface".format(url), "method": method}
+                requests.append(request)
+            if config.get("message_type"):
+                request = {"path": "{}/config/openconfig-system-ext:message-type".format(url), "method": method}
+                requests.append(request)
+            if config.get("vrf"):
+                request = {"path": "{}/config/openconfig-system-ext:vrf-name".format(url), "method": method}
+                requests.append(request)
+            if 'remote_port' in config:
+                request = {"path": "{}/config/remote-port".format(url), "method": method}
+                requests.append(request)
+            if 'protocol' in config:
+                request = {"path": "{}/config/openconfig-system-ext:protocol".format(url), "method": method}
+                requests.append(request)
+
+            # TODO : Add severity after PR review
+
+            # Delete full logging server
+            if not (config.get("vrf") or config.get("source_interface") or config.get("message_type") or config.get("remote_port") or config.get("protocol")):
+                request = {"path": url, "method": method}
+                requests.append(request)
 
         return requests
 
