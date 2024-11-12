@@ -390,7 +390,6 @@ class Logging(ConfigBase):
 
         requests = []
 
-        print("Configs: {}".format(configs), file=open('/home/testuser/mylog.txt', 'a'))
         servers_config = configs.get('remote_servers', None)
         if servers_config:
             servers_request = []
@@ -445,7 +444,7 @@ class Logging(ConfigBase):
         for config in configs:
             server_host = config['host']
             url = 'data/openconfig-system:system/logging/remote-servers/remote-server={0}'.format(server_host)
-            if not (config.get("vrf") or config.get("source_interface") or config.get("message_type") or config.get("remote_port") or config.get("protocol")):
+            if not (config.get("vrf") or config.get("source_interface") or config.get("message_type") or config.get("remote_port") or config.get("protocol") or config.get("severity")):
                 request = {"path": url, "method": method}
                 requests.append(request)
             else:
