@@ -454,10 +454,6 @@ class Interfaces(ConfigBase):
             payload['openconfig-if-ethernet:config'][payload_attr] = c_attr
             if attr == 'speed':
                 valid_intf_speeds = retrieve_valid_intf_speed(self._module, intf_name)
-                print("Valid speeds: {}".format(valid_intf_speeds), file=open('/home/testuser/mylog.txt', 'a'))
-                for speed in valid_intf_speeds:
-                    print("Valid speeds in english: {}".format(intf_speed_to_number_map.get(speed)), file=open('/home/testuser/mylog.txt', 'a'))
-
                 if self.is_port_in_port_group(intf_name) and (intf_speed_to_number_map.get(c_attr) not in valid_intf_speeds):
                     self._module.fail_json(msg=("If the port-group is configured in its default speed you will be unable to set a member interface to a non-default speed. "
                                            "Please use the port-group module to change the member interfaces port-group's speed before changing the interface's port speed. "
