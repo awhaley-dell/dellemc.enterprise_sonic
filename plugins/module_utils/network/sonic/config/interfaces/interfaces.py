@@ -43,7 +43,9 @@ from ansible_collections.dellemc.enterprise_sonic.plugins.module_utils.network.s
 from ansible_collections.dellemc.enterprise_sonic.plugins.module_utils.network.sonic.utils.interfaces_util import (
     build_interfaces_create_request,
     retrieve_default_intf_speed,
-    retrieve_port_group_interfaces
+    retrieve_port_group_interfaces,
+    retrieve_valid_intf_speed,
+    intf_speed_to_number_map
 )
 from ansible_collections.dellemc.enterprise_sonic.plugins.module_utils.network.sonic.utils.utils import (
     get_diff,
@@ -175,7 +177,10 @@ class Interfaces(ConfigBase):
                 try:
                     edit_config(self._module, to_request(self._module, requests))
                 except ConnectionError as exc:
-                    self._module.fail_json(msg=str(exc), code=exc.code)
+                    if "Unsupported speed" in str(exc):
+                        print("Invalid speed seen.", file=open('/home/testuser/mylog.txt', 'a'))
+                    else:
+                        self._module.fail_json(msg=str(exc), code=exc.code)
             result['changed'] = True
         result['commands'] = commands
 
@@ -448,7 +453,13 @@ class Interfaces(ConfigBase):
         else:
             payload['openconfig-if-ethernet:config'][payload_attr] = c_attr
             if attr == 'speed':
+                valid_intf_speeds = retrieve_valid_intf_speed(self._module, intf_name)
+                if self.is_port_in_port_group(intf_name) and (intf_speed_to_number_map.get(c_attr) not in valid_intf_speeds):
+                    self._module.fail_json(msg=("If the port-group is configured in its default speed you will be unable to set a member interface to a non-default speed. "
+                                           "Please use the port-group module to change the member interfaces port-group's speed before changing the interface's port speed. "
+                                           "Valid speeds for {} are currently {}").format(intf_name, valid_intf_speeds))
                 payload['openconfig-if-ethernet:config'][payload_attr] = 'openconfig-if-ethernet:' + c_attr
+
             if attr == 'advertised_speed':
                 c_ads = c_attr if c_attr else []
                 h_ads = h_attr if h_attr else []
