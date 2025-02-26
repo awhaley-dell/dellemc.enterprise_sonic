@@ -338,16 +338,88 @@ before:
   description: The configuration prior to the module invocation.
   returned: always
   type: list
-  sample: >
-    The configuration returned will always be in the same format
-    as the parameters above.
+  sample: As of Feb 2025 >
+    Before: [
+     {
+        "access_groups": [
+           {
+              "acls": [
+                 {
+                    "direction": "in",
+                    "name": "mac-acl-1"
+                 }
+              ],
+              "type": "mac"
+           },
+           {
+              "acls": [
+                 {
+                    "direction": "in",
+                    "name": "ipv4-acl-1"
+                 },
+                 {
+                    "direction": "out",
+                    "name": "ipv4-acl-2"
+                 }
+              ],
+              "type": "ipv4"
+           }
+        ],
+        "name": "Eth1/5"
+     }
+  ]
 after:
   description: The resulting configuration module invocation.
   returned: when changed
   type: list
-  sample: >
-    The configuration returned will always be in the same format
-    as the parameters above.
+  sample: As of Feb 2025 >
+    After: [
+     {
+        "access_groups": [
+           {
+              "acls": [
+                 {
+                    "direction": "in",
+                    "name": "mac-acl-1"
+                 },
+                 {
+                    "direction": "out",
+                    "name": "mac-acl-2"
+                 }
+              ],
+              "type": "mac"
+           },
+           {
+              "acls": [
+                 {
+                    "direction": "in",
+                    "name": "ipv4-acl-1"
+                 },
+                 {
+                    "direction": "out",
+                    "name": "ipv4-acl-2"
+                 }
+              ],
+              "type": "ipv4"
+           }
+        ],
+        "name": "Eth1/5"
+     },
+     {
+        "access_groups": [
+           {
+              "acls": [
+                 {
+                    "direction": "out",
+                    "name": "ipv6-acl-2"
+                 }
+              ],
+              "type": "ipv6"
+           }
+        ],
+        "name": "Eth1/6"
+     }
+  ]
 after(generated):
   description: The generated configuration module invocation.
   returned: when C(check_mode)

@@ -33,13 +33,15 @@ DOCUMENTATION = """
 ---
 module: sonic_bfd
 version_added: "2.1.0"
+# MAKE SURE TO INDENT NOTES SECTION COMMENTS IN DOCUMENTATION
 notes:
   - Tested against Enterprise SONiC Distribution by Dell Technologies.
   - Supports C(check_mode).
 short_description: Manage BFD configuration on SONiC
 description:
   - This module provides configuration management of BFD for devices running SONiC
-author: "Shade Talabi (@stalabi1)"
+# Change S. to S.
+author: "S. Talabi (@stalabi1)"
 options:
   config:
     description:
@@ -224,6 +226,7 @@ options:
     choices: ['merged', 'deleted', 'replaced', 'overridden']
     default: merged
 """
+
 EXAMPLES = """
 # Using Merged
 #
@@ -636,33 +639,210 @@ EXAMPLES = """
 # sonic# show bfd peers
 # (No "bfd peers" configuration present)
 """
+
 RETURN = """
 before:
   description: The configuration prior to the module invocation.
   returned: always
-  type: list
+  type: dict
   sample: >
-    The configuration returned will always be in the same format
-    as the parameters above.
+    Before: {
+     "multi_hops": [
+        {
+           "detect_multiplier": 3,
+           "enabled": true,
+           "local_address": "3.3.3.3",
+           "min_ttl": 125,
+           "passive_mode": true,
+           "profile_name": "p1",
+           "receive_interval": 100,
+           "remote_address": "192.40.1.3",
+           "transmit_interval": 75,
+           "vrf": "default"
+        }
+     ],
+     "profiles": [
+        {
+           "detect_multiplier": 2,
+           "echo_interval": 150,
+           "echo_mode": true,
+           "enabled": true,
+           "min_ttl": 140,
+           "passive_mode": true,
+           "profile_name": "p1",
+           "receive_interval": 200,
+           "transmit_interval": 120
+        }
+     ],
+     "single_hops": [
+        {
+           "detect_multiplier": 4,
+           "echo_interval": 110,
+           "echo_mode": true,
+           "enabled": true,
+           "interface": "Eth1/5",
+           "local_address": "1.1.1.1",
+           "passive_mode": true,
+           "profile_name": "p1",
+           "receive_interval": 80,
+           "remote_address": "196.88.6.1",
+           "transmit_interval": 50,
+           "vrf": "default"
+        }
+     ]
+  }
+
 after:
   description: The resulting configuration module invocation.
   returned: when changed
-  type: list
+  type: dict
   sample: >
-    The configuration returned will always be in the same format
-    as the parameters above.
+    After: {
+       "multi_hops": [
+          {
+             "detect_multiplier": 3,
+             "enabled": false,
+             "local_address": "3.3.3.3",
+             "min_ttl": 150,
+             "passive_mode": false,
+             "profile_name": "p2",
+             "receive_interval": 280,
+             "remote_address": "192.40.1.3",
+             "transmit_interval": 65,
+             "vrf": "default"
+          },
+          {
+             "detect_multiplier": 8,
+             "enabled": false,
+             "local_address": "4.4.4.4",
+             "min_ttl": 155,
+             "passive_mode": false,
+             "profile_name": "p2",
+             "receive_interval": 285,
+             "remote_address": "198.72.1.4",
+             "transmit_interval": 70,
+             "vrf": "default"
+          }
+       ],
+       "profiles": [
+          {
+             "detect_multiplier": 5,
+             "echo_interval": 255,
+             "echo_mode": false,
+             "enabled": false,
+             "min_ttl": 245,
+             "passive_mode": false,
+             "profile_name": "p1",
+             "receive_interval": 220,
+             "transmit_interval": 130
+          },
+          {
+             "detect_multiplier": 10,
+             "echo_interval": 250,
+             "echo_mode": true,
+             "enabled": true,
+             "min_ttl": 250,
+             "passive_mode": true,
+             "profile_name": "p2",
+             "receive_interval": 225,
+             "transmit_interval": 135
+          }
+       ],
+       "single_hops": [
+          {
+             "detect_multiplier": 7,
+             "echo_interval": 145,
+             "echo_mode": false,
+             "enabled": false,
+             "interface": "Eth1/6",
+             "local_address": "2.2.2.2",
+             "passive_mode": false,
+             "profile_name": "p2",
+             "receive_interval": 95,
+             "remote_address": "194.56.2.1",
+             "transmit_interval": 65,
+             "vrf": "default"
+          },
+          {
+             "detect_multiplier": 2,
+             "echo_interval": 140,
+             "echo_mode": false,
+             "enabled": false,
+             "interface": "Eth1/5",
+             "local_address": "1.1.1.1",
+             "passive_mode": false,
+             "profile_name": "p1",
+             "receive_interval": 90,
+             "remote_address": "196.88.6.1",
+             "transmit_interval": 60,
+             "vrf": "default"
+          }
+       ]
+    }
+
 after(generated):
   description: The generated configuration module invocation.
   returned: when C(check_mode)
-  type: list
+  type: dict
   sample: >
-    The configuration returned will always be in the same format
-    as the parameters above.
+    The output will be identical to the After section above but with an appended (generated) after the After keyword.
+    After(generated):
+
 commands:
   description: The set of commands pushed to the remote device.
   returned: always
   type: list
-  sample: ['command 1', 'command 2', 'command 3']
+  sample: >
+  Commands: [
+   {
+      "bfd": {
+         "enable": true
+      },
+      "name": "Ethernet100",
+      "ospf_attributes": [
+         {
+            "address": "10.19.120.2",
+            "area_id": "3.3.3.3",
+            "authentication": {
+               "encrypted": true,
+               "password": "U2FsdGVkX19eY7P3qRyyjaFsQgjoSQE71IX6IeBRios="
+            },
+            "authentication_type": "MD5HMAC",
+            "hello_multiplier": 5
+         }
+      ],
+      "state": "deleted"
+   },
+   {
+      "bfd": {
+         "bfd_profile": "profile2",
+         "enable": true
+      },
+      "name": "PortChannel100",
+      "ospf_attributes": [
+         {
+            "hello_multiplier": 2,
+            "retransmit_interval": 100,
+            "transmit_delay": 20
+         }
+      ],
+      "state": "deleted"
+   },
+   {
+      "name": "PortChannel100",
+      "ospf_attributes": [
+         {
+            "area_id": "2.2.2.2",
+            "cost": 20,
+            "dead_interval": 40,
+            "hello_interval": 10,
+            "mtu_ignore": true,
+            "priority": 20
+         }
+      ],
+      "state": "replaced"
+   }
+]
 """
 
 

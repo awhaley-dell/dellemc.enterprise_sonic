@@ -19,7 +19,7 @@ version_added: 1.1.0
 notes:
   - Tested against Enterprise SONiC Distribution by Dell Technologies
   - Supports C(check_mode)
-author: Shade Talabi (@stalabi1)
+author: S. Talabi (@stalabi1)
 short_description: Manage AAA configuration on SONiC
 description:
   - This module provides configuration management of AAA for devices running SONiC.
@@ -390,10 +390,97 @@ before:
   description: The configuration prior to the module invocation.
   returned: always
   type: dict
+  sample: As of Feb 2025 > 
+  Before: [
+   "authentication": {
+      "auth_method": [
+         "local",
+         "ldap"
+      ],
+      "console_auth_local": true,
+      "failthrough": true
+   },
+   "authorization": {
+      "commands_auth_method": [
+         "local",
+         "tacacs+"
+      ],
+      "login_auth_method": [
+         "local",
+         "ldap"
+      ]
+   },
+   "name_service": {
+      "group": [
+         "ldap",
+         "local",
+         "login"
+      ],
+      "netgroup": [
+         "ldap",
+         "local"
+      ],
+      "passwd": [
+         "ldap",
+         "local",
+         "login"
+      ],
+      "shadow": [
+         "ldap",
+         "local",
+         "login"
+      ],
+      "sudoers": [
+         "ldap",
+         "local"
+      ]
+   }
+]
 after:
   description: The resulting configuration module invocation.
   returned: when changed
   type: dict
+  sample: As of Feb 2025 >
+  After: [
+   "authentication": {
+      "auth_method": [
+         "local",
+         "tacacs+"
+      ],
+      "console_auth_local": false,
+      "failthrough": false
+   },
+   "authorization": {
+      "commands_auth_method": [
+         "tacacs+",
+         "local"
+      ],
+      "login_auth_method": [
+         "ldap",
+         "local"
+      ]
+   },
+   "name_service": {
+      "group": [
+         "local",
+         "login"
+      ],
+      "netgroup": [
+         "ldap"
+      ],
+      "passwd": [
+         "login"
+      ],
+      "shadow": [
+         "login",
+         "local",
+         "ldap"
+      ],
+      "sudoers": [
+         "local"
+      ]
+   }
+]
 after(generated):
   description: The generated configuration module invocation.
   returned: when C(check_mode)
